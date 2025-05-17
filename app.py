@@ -26,7 +26,6 @@ with st.form("player_form"):
 
     submitted = st.form_submit_button("Calculate Cost")
 
-
 if submitted:
     def to_datetime_range(start_time, end_time):
         today = datetime.today()
@@ -71,45 +70,3 @@ if submitted:
             if name in present:
                 total_cost += rate_per_min / len(present)
         st.write(f"**{name}**: {total_cost:.2f} EGP for {total_minutes} minutes")
-
-    player_times = []
-    for p in player_times:
-        start_dt, end_dt = to_datetime_range(p["start"], p["end"])
-        player_times.append({
-            "name": p["name"],
-            "start": start_dt,
-            "end": end_dt
-        })
-
-    min_time = min(p["start"] for p in player_times)
-    max_time = max(p["end"] for p in player_times)
-
-    timeline = {}
-    durations = {}
-    current_time = min_time
-    while current_time < max_time:
-        present = [
-            p["name"]
-            for p in player_times
-            if to_datetime(p["start"]) <= current_time < to_datetime(p["end"])
-        ]
-        if present:
-            cost_per_person = rate_per_min / len(present)
-            for name in present:
-                if name not in timeline:
-                    timeline[name] = 0
-                    durations[name] = 0
-                timeline[name] += cost_per_person
-                durations[name] += 1
-        current_time += timedelta(minutes=1)
-
-    total_cost = sum(timeline.values())
-
-    st.markdown("## 💰 Cost Breakdown")
-    for name in timeline:
-        time_minutes = durations[name]
-        time_hours = round(time_minutes / 60, 2)
-        cost = round(timeline[name], 2)
-        st.info(f"**{name}**: Played for **{time_hours}** hours | Cost: **{cost} EGP**")
-
-    st.success(f"✅ Total Group Cost: **{round(total_cost, 2)} EGP**")
