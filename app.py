@@ -26,6 +26,7 @@ with st.form("player_form"):
 
     submitted = st.form_submit_button("Calculate Cost")
 
+
 if submitted:
     def to_datetime_range(start_time, end_time):
         today = datetime.today()
@@ -34,6 +35,42 @@ if submitted:
         if end_dt <= start_dt:
             end_dt += timedelta(days=1)
         return start_dt, end_dt
+
+    player_times = []
+    for p in players:
+        start_dt, end_dt = to_datetime_range(p["start"], p["end"])
+        player_times.append({
+            "name": p["name"],
+            "start": start_dt,
+            "end": end_dt
+        })
+
+    min_time = min(p["start"] for p in player_times)
+    max_time = max(p["end"] for p in player_times)
+
+    timeline = {}
+    durations = {}
+    current_time = min_time
+    while current_time < max_time:
+        present = [
+            p["name"]
+            for p in player_times
+            if p["start"] <= current_time < p["end"]
+        ]
+        if present:
+            for name in present:
+                durations[name] = durations.get(name, 0) + 1
+            timeline[current_time] = present
+        current_time += timedelta(minutes=1)
+
+    st.markdown("## 💰 Cost Breakdown")
+    for name in durations:
+        total_minutes = durations[name]
+        total_cost = 0
+        for time, present in timeline.items():
+            if name in present:
+                total_cost += rate_per_min / len(present)
+        st.write(f"**{name}**: {total_cost:.2f} EGP for {total_minutes} minutes")
 
     player_times = []
     for p in player_times:
